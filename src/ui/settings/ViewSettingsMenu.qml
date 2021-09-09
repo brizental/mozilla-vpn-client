@@ -81,6 +81,15 @@ VPNFlickable {
         y: Theme.vSpacing + manageAccountButton.y + manageAccountButton.height
         width: parent.width - Theme.windowMargin
         anchors.horizontalCenter: parent.horizontalCenter
+
+        Button {
+            text: VPNl18n.tr(VPNl18n.MultiHopFeatureMultiHopConnectionsHeader)
+        }
+
+        Button {
+            text: qsTrId("vpn.alert.tryAgain")
+        }
+
         VPNSettingsItem {
             objectName: "settingsWhatsNew"
             settingTitle: VPNl18n.tr(VPNl18n.WhatsNewReleaseNotesTourPageHeader)
