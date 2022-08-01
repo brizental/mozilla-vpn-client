@@ -129,6 +129,7 @@ void WebSocketHandler::open() {
   request.setRawHeader("Authorization",
                        SettingsHolder::instance()->token().toLocal8Bit());
   request.setUrl(QUrl(webSocketServerUrl()));
+  request.setAttribute(QNetworkRequest::Http2AllowedAttribute, false);
   m_webSocket.open(request);
 }
 

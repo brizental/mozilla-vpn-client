@@ -1,0 +1,32 @@
+This script runs the functional tests
+
+Running the test: tests/functional/testTipsAndTricksIntroModal.js
+
+> functionalTest
+> mocha --require ./tests/functional/setupVpn.js --timeout 30000 --retries 3 "tests/functional/testTipsAndTricksIntroModal.js"
+
+
+
+== Mozilla VPN - Leak report ===================
+No leaks detected.
+VPN Version is: build/src/mozillavpn 2.10.0
+
+  Tips and tricks intro modal
+Retrieving the setting file...
+Starting test: Access and navigate tips and tricks via intro modal
+1
+2
+false
+    1) "after each" hook: afterEach for "Access and navigate tips and tricks via intro modal"
+
+
+  0 passing (2m)
+  1 failing
+
+  1) "after each" hook: afterEach for "Access and navigate tips and tricks via intro modal":
+     Error: Timeout of 30000ms exceeded. For async tests and hooks, ensure "done()" is called; if returning a Promise, ensure it resolves.
+      at listOnTimeout (node:internal/timers:559:17)
+      at processTimers (node:internal/timers:502:7)
+
+
+
