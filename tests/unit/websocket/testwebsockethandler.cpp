@@ -233,18 +233,9 @@ void TestWebSocketHandler::
   // unsuccesfull.
   server.close();
 
-  // No need to do anything here.
-  //
-  // The handler should be polling for reconnection every 5ms,
-  // we will let it do that at least 3 times.
-  QTest::qWait(qPow(testBaseRetryInterval, 5));
-
-  // We have to be a bit loose here with the checks.
-  //
-  // We know there were at least three retries,
-  // so the current backoff interval should be at least longer than the 3rd
-  // interval.
-  QVERIFY(handler.m_currentBackoffInterval > qPow(testBaseRetryInterval, 3));
+  // Check that interval increased due to failed re-connection attempts.
+  QTRY_VERIFY2(handler.m_currentBackoffInterval > testBaseRetryInterval,
+               "Backoff interval did not increase as expected");
 
   // Reopen the server so reconnections can take place.
   server.open();
@@ -252,28 +243,9 @@ void TestWebSocketHandler::
   QVERIFY(newConnectionSpy.wait());
   QCOMPARE(newConnectionSpy.count(), 2);
 
-  // Give it just a bit of time for the `onConnected` handler to be called.
-  // The new connection spy is triggered before that and if we don't wait
-  // there is no time for the handler to reset the interval.
-  //
-  // Yes, this is a bit hacky.
-  QTest::qWait(50);
-
-  // Close the open connections to prompt a new reconnection.
-  server.closeEach();
-
   // The reconnection interval should have been reset.
-  // Reconnection might be so fast that when we get to this line
-  // m_currentBackoffInterval has already been reset to 0.
-  QVERIFY(handler.m_currentBackoffInterval <= testBaseRetryInterval);
-
-  // Wait for reconnection.
-  QVERIFY(newConnectionSpy.wait());
-  QCOMPARE(newConnectionSpy.count(), 3);
-
-  // The backoff interval is reset to 0 when not waiting for reconnection
-  // attempt.
-  QCOMPARE(handler.m_currentBackoffInterval, testBaseRetryInterval);
+  // When not waiting for reconnection it is set to the special value `0`.
+  QTRY_COMPARE(handler.m_currentBackoffInterval, 0);
 }
 
 void TestWebSocketHandler::tst_reconnectionAttemptsOnPingTimeout() {
