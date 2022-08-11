@@ -9,6 +9,8 @@
 #include "helper.h"
 #include "l18nstrings.h"
 
+constexpr const char* TEST_OUTPUT_FOLDER_NAME = "TestOutput";
+
 QVector<TestHelper::NetworkConfig> TestHelper::networkConfig;
 MozillaVPN::State TestHelper::vpnState = MozillaVPN::StateInitialize;
 Controller::State TestHelper::controllerState = Controller::StateInitializing;
@@ -49,6 +51,10 @@ int main(int argc, char* argv[]) {
   L18nStrings::initialize();
   LogHandler::enableDebug();
 
+  QStringList testCmd;
+  QDir qtestLogDir;
+  qtestLogDir.mkdir(TEST_OUTPUT_FOLDER_NAME);
+
   // If arguments were passed, then run a subset of tests.
   QStringList args = a.arguments();
   if (args.count() > 1) {
@@ -60,7 +66,14 @@ int main(int argc, char* argv[]) {
         ++failures;
         continue;
       }
-      int result = QTest::qExec(obj);
+
+      QString outputFilePath =
+          QString("%1/%2.txt").arg(TEST_OUTPUT_FOLDER_NAME, x);
+      testCmd << " "
+              << "-o" << outputFilePath;
+
+      qDebug() << testCmd;
+      int result = QTest::qExec(obj, testCmd);
       if (result != 0) {
         ++failures;
       }
@@ -68,7 +81,14 @@ int main(int argc, char* argv[]) {
   } else {
     // Otherwise, run all the tests.
     for (QObject* obj : TestHelper::testList) {
-      int result = QTest::qExec(obj);
+      const QMetaObject* meta = obj->metaObject();
+      QString outputFilePath =
+          QString("%1/%2.txt").arg(TEST_OUTPUT_FOLDER_NAME, meta->className());
+      testCmd << " "
+              << "-o" << outputFilePath;
+
+      qDebug() << testCmd;
+      int result = QTest::qExec(obj, testCmd);
       if (result != 0) {
         ++failures;
       }
