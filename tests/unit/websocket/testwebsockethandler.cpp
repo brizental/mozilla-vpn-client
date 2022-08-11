@@ -198,9 +198,9 @@ void TestWebSocketHandler::
 
   // No need to do anything here.
   //
-  // The handler should be polling for reconnection every 5ms,
+  // The handler should be polling for reconnection,
   // we will let it do that a few times.
-  QTest::qWait(500);
+  QTest::qWait(100);
 
   // Reopen the server so reconnections can take place.
   server.open();
