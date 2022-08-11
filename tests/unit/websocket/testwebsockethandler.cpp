@@ -7,10 +7,15 @@
 #include "../../src/constants.h"
 #include "../../src/mozillavpn.h"
 #include "../../src/websocket/websockethandler.h"
+#include "../../src/logger.h"
 #include "helper.h"
 
 #include <QtWebSockets/QWebSocketServer>
 #include <QtMath>
+
+namespace {
+Logger logger(LOG_MAIN, "TestWebSocketHandler");
+}  // namespace
 
 /**
  * @brief Construct a new Mock Server:: Mock Server object
@@ -204,6 +209,8 @@ void TestWebSocketHandler::
 
   // Reopen the server so reconnections can take place.
   server.open();
+
+  logger.debug() << handler.m_currentBackoffInterval;
 
   // // Before waiting for reconnection, let's see if the interval has
   // increased.
