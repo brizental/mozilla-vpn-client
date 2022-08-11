@@ -210,36 +210,35 @@ void TestWebSocketHandler::tst_reconnectionsAreAttemptedUntilSuccessfull() {
 
 void TestWebSocketHandler::
     tst_reconnectionBackoffIsResetOnSuccessfullConnection() {
-  //   SettingsHolder settingsHolder;
-  //   WebSocketHandler::testOverrideWebSocketServerUrl(MOCK_SERVER_ADDRESS);
+  SettingsHolder settingsHolder;
+  WebSocketHandler::testOverrideWebSocketServerUrl(MOCK_SERVER_ADDRESS);
 
-  //   MockServer server;
-  //   QSignalSpy newConnectionSpy(&server,
-  //   SIGNAL(newConnection(QNetworkRequest))); QSignalSpy
-  //   socketDisconnectedSpy(&server, SIGNAL(socketDisconnected()));
+  MockServer server;
+  QSignalSpy newConnectionSpy(&server, SIGNAL(newConnection(QNetworkRequest)));
+  QSignalSpy socketDisconnectedSpy(&server, SIGNAL(socketDisconnected()));
 
-  //   int testBaseRetryInterval = 5;
-  //   WebSocketHandler handler;
-  //   handler.testOverrideBaseRetryInterval(testBaseRetryInterval);
-  //   handler.initialize();
+  int testBaseRetryInterval = 5;
+  WebSocketHandler handler;
+  handler.testOverrideBaseRetryInterval(testBaseRetryInterval);
+  handler.initialize();
 
-  //   // Mock a user log in, this should prompt a new websocket connection.
-  //   TestHelper::userState = MozillaVPN::UserAuthenticated;
-  //   emit MozillaVPN::instance()->userStateChanged();
+  // Mock a user log in, this should prompt a new websocket connection.
+  TestHelper::userState = MozillaVPN::UserAuthenticated;
+  emit MozillaVPN::instance()->userStateChanged();
 
-  //   QVERIFY(newConnectionSpy.wait());
-  //   QCOMPARE(newConnectionSpy.count(), 1);
+  QVERIFY(newConnectionSpy.wait());
+  QCOMPARE(newConnectionSpy.count(), 1);
 
-  //   // Close the whole server. All subsequent reconnection attempts will be
-  //   // unsuccesfull.
-  //   server.close();
+  // Close the whole server. All subsequent reconnection attempts will be
+  // unsuccesfull.
+  server.close();
 
-  //   // Check that interval increased due to failed re-connection attempts.
-  //   QTRY_VERIFY2(handler.m_currentBackoffInterval > testBaseRetryInterval,
-  //                "Backoff interval did not increase as expected");
+  // Check that interval increased due to failed re-connection attempts.
+  QTRY_VERIFY2(handler.m_currentBackoffInterval > testBaseRetryInterval,
+               "Backoff interval did not increase as expected");
 
-  //   // Reopen the server so reconnections can take place.
-  //   server.open();
+  // Reopen the server so reconnections can take place.
+  server.open();
 
   //   // Wait for reconnection.
   //   QVERIFY(newConnectionSpy.wait());
