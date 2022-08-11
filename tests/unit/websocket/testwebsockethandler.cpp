@@ -211,11 +211,11 @@ void TestWebSocketHandler::
   server.open();
 
   logger.debug() << handler.m_currentBackoffInterval;
+  logger.debug() << testBaseRetryInterval;
 
-  // // Before waiting for reconnection, let's see if the interval has
-  // increased.
-  // // It is expected to increase on every reconnection attempt.
-  // QVERIFY(handler.m_currentBackoffInterval > testBaseRetryInterval);
+  // Before waiting for reconnection, let's see if the interval has increased.
+  // It is expected to increase on every reconnection attempt.
+  QVERIFY(handler.m_currentBackoffInterval > testBaseRetryInterval);
 
   // Wait for reconnection.
   QVERIFY(newConnectionSpy.wait());
