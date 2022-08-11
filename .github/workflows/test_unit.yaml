@@ -196,11 +196,13 @@ jobs:
           export PATH=/c/MozillaVPNBuild/bin:$PATH
           mkdir -p build
           cmake -S . -B $(pwd)/build -DBUILD_TESTING=ON
-          cmake --build $(pwd)/build --config Release --target build_tests
+          cmake --build $(pwd)/build --config Debug --target build_tests
 
       - name: Running tests
         shell: bash
         working-directory: ./build
         run: |
-          ctest --build-config Release --output-on-failure || true
-          cat TestOutput/TestWebSocketHandler.txt
+          ctest --output-on-failure || true
+          ls
+          ls ./TestOutput
+          cat ./TestOutput/TestWebSocketHandler.txt
