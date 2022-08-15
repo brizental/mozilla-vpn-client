@@ -6,12 +6,11 @@
 #define ADDONMANAGER_H
 
 #include "addons/addon.h"  // required for the signal
+#include "addonindex.h"
 
 #include <QJSValue>
 #include <QMap>
 #include <QAbstractListModel>
-
-class QDir;
 
 class AddonManager final : public QAbstractListModel {
   Q_OBJECT
@@ -23,6 +22,8 @@ class AddonManager final : public QAbstractListModel {
  public:
   Q_INVOKABLE Addon* pick(QJSValue filterCallback) const;
 
+  Q_INVOKABLE QJSValue reduce(QJSValue callback, QJSValue initialValue) const;
+
   enum ModelRoles {
     AddonRole = Qt::UserRole + 1,
   };
@@ -30,8 +31,6 @@ class AddonManager final : public QAbstractListModel {
   static AddonManager* instance();
 
   ~AddonManager();
-
-  void updateIndex(const QByteArray& index, const QByteArray& indexSignature);
 
   void storeAndLoadAddon(const QByteArray& addonData, const QString& addonId,
                          const QByteArray& sha256);
@@ -44,19 +43,20 @@ class AddonManager final : public QAbstractListModel {
 
   void forEach(std::function<void(Addon* addon)>&& callback);
 
+  void updateIndex(const QByteArray& index, const QByteArray& indexSignature);
+
+#ifdef UNIT_TEST
+  QStringList addonIds() const;
+#endif
+
  private:
   explicit AddonManager(QObject* parent);
 
   void initialize();
 
-  bool validateIndex(const QByteArray& index, const QByteArray& indexSignature);
+  void updateAddonsList(QList<AddonData> addons);
   bool validateAndLoad(const QString& addonId, const QByteArray& sha256,
                        bool checkSha256 = true);
-
-  static bool addonDir(QDir* dir);
-  static bool readIndex(QByteArray& index, QByteArray& indexSignature);
-  static void writeIndex(const QByteArray& index,
-                         const QByteArray& indexSignature);
 
   static void removeAddon(const QString& addonId);
 
@@ -74,17 +74,12 @@ class AddonManager final : public QAbstractListModel {
   void loadCompletedChanged();
 
  private:
-  // This struct can be partially empty in case the sha does not match, or the
-  // addon does not need to be loaded for unmatched conditions.
-  struct AddonData {
-    QByteArray m_sha256;
-    QString m_addonId;
-    Addon* m_addon;
-  };
-
   QMap<QString, AddonData> m_addons;
 
   bool m_loadCompleted = false;
+
+  AddonIndex m_addonIndex;
+  AddonDirectory m_addonDirectory;
 };
 
 #endif  // ADDONMANAGER_H

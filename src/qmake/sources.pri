@@ -3,7 +3,6 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 SOURCES += \
-        addonmanager.cpp \
         addons/addon.cpp \
         addons/addondemo.cpp \
         addons/addonguide.cpp \
@@ -14,6 +13,9 @@ SOURCES += \
         addons/conditionwatchers/addonconditionwatchergroup.cpp \
         addons/conditionwatchers/addonconditionwatcherlocales.cpp \
         addons/conditionwatchers/addonconditionwatchertriggertimesecs.cpp \
+        addons/manager/addondirectory.cpp \
+        addons/manager/addonindex.cpp \
+        addons/manager/addonmanager.cpp \
         apppermission.cpp \
         authenticationlistener.cpp \
         authenticationinapp/authenticationinapp.cpp \
@@ -154,10 +156,11 @@ SOURCES += \
         update/versionapi.cpp \
         urlopener.cpp \
         update/webupdater.cpp \
-        websockethandler.cpp
+        websocket/exponentialbackoffstrategy.cpp \
+        websocket/pushmessage.cpp \
+        websocket/websockethandler.cpp
 
 HEADERS += \
-        addonmanager.h \
         addons/addon.h \
         addons/addondemo.h \
         addons/addonguide.h \
@@ -165,9 +168,12 @@ HEADERS += \
         addons/addonmessage.h \
         addons/addontutorial.h \
         addons/conditionwatchers/addonconditionwatcher.h \
+        addons/conditionwatchers/addonconditionwatchergroup.h \
         addons/conditionwatchers/addonconditionwatcherlocales.h \
         addons/conditionwatchers/addonconditionwatchertriggertimesecs.h \
-        addons/conditionwatchers/addonconditionwatchergroup.h \
+        addons/manager/addondirectory.h \
+        addons/manager/addonindex.h \
+        addons/manager/addonmanager.h \
         appimageprovider.h \
         apppermission.h \
         applistprovider.h \
@@ -309,7 +315,9 @@ HEADERS += \
         update/versionapi.h \
         update/webupdater.h \
         urlopener.h \
-        websockethandler.h
+        websocket/exponentialbackoffstrategy.h \
+        websocket/pushmessage.h \
+        websocket/websockethandler.h
 
 # Signal handling for unix platforms
 unix {
