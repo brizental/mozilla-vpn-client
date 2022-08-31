@@ -4,6 +4,7 @@
 #ifndef GLEAN_FFI_GENERATED_H
 #define GLEAN_FFI_GENERATED_H
 
+
 /* Generated with cbindgen:0.24.3 */
 
 /* DO NOT MODIFY THIS MANUALLY! This file was generated using cbindgen. */
@@ -24,8 +25,12 @@ int32_t glean_counter_test_get_value(uint32_t id);
 
 bool glean_counter_test_get_error(uint32_t id);
 
+void glean_event_record(uint32_t id);
+
+bool glean_event_test_get_error(uint32_t id);
+
 void glean_submit_ping_by_id(uint32_t id);
 
-}  // extern "C"
+} // extern "C"
 
-#endif  // GLEAN_FFI_GENERATED_H
+#endif // GLEAN_FFI_GENERATED_H

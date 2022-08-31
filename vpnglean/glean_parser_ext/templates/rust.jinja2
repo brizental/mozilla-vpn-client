@@ -14,6 +14,8 @@ use crate::metrics::MetricId;
 use std::collections::HashMap;
 use once_cell::sync::Lazy;
 
+use glean::traits::EventRecordingError;
+
 {% for typ, metrics in metric_by_type.items() %}
 pub static {{typ.0}}: Lazy<HashMap<MetricId, &Lazy<glean::private::{{typ.1}}>>> = Lazy::new(|| {
     let mut map = HashMap::with_capacity({{metrics|length}});
@@ -22,6 +24,60 @@ pub static {{typ.0}}: Lazy<HashMap<MetricId, &Lazy<glean::private::{{typ.1}}>>> 
     {% endfor %}
     map
 });
+
+/// Wrapper to record an event based on its metric ID.
+///
+/// # Arguments
+///
+/// * `metric_id` - The metric's ID to look up
+/// * `extra`     - An map of (extra key id, string) pairs.
+///                 The map will be decoded into the appropriate `ExtraKeys` type.
+/// # Returns
+///
+/// Returns `Ok(())` if the event was found and `record` was called with the given `extra`,
+/// or an `EventRecordingError::InvalidId` if no event by that ID exists
+/// or an `EventRecordingError::InvalidExtraKey` if the `extra` map could not be deserialized.
+pub(crate) fn record_event_by_id(metric_id: u32/*, extra: HashMap<String, String>*/) -> Result<(), EventRecordingError> {
+    match metric_id {
+{% for metric_id, event in events_by_id.items() %}
+        {{metric_id}} => {
+            // assert!(
+            //     extra.is_empty(),
+            //     "No extra keys allowed, but some were passed"
+            // );
+
+            crate::metrics::og_metrics::{{event}}.record(None);
+            Ok(())
+        }
+{% endfor %}
+        _ => Err(EventRecordingError::InvalidId),
+    }
+}
+
+/// Check the provided event for errors.
+///
+/// # Arguments
+///
+/// * `metric_id` - The metric's ID to look up
+/// * `ping_name` - (Optional) The ping name to look into.
+///                 Defaults to the first value in `send_in_pings`.
+///
+/// # Returns
+///
+/// Returns a string for the recorded error or `None`.
+///
+/// # Panics
+///
+/// Panics if no event by the given metric ID could be found.
+#[allow(unused_variables)]
+pub(crate) fn event_test_get_error(metric_id: u32) -> Option<String> {
+    match metric_id {
+{% for metric_id, event in events_by_id.items() %}
+        {{metric_id}} => test_get_errors!(crate::metrics::og_metrics::{{event}}),
+{% endfor %}
+        _ => panic!("No event for metric id {}", metric_id),
+    }
+}
 
 {% endfor %}
 {% endif %}

@@ -1,9 +1,13 @@
+#[macro_use]
+pub mod macros;
+
 use std::env;
 
 use glean::{ClientInfoMetrics, Configuration};
 use uploader::VPNPingUploader;
 
 pub mod ffi;
+
 pub mod metrics;
 mod uploader;
 
