@@ -154,6 +154,7 @@ target_sources(mozillavpn PRIVATE
     glean/metrictypes.h
     glean/private/counter.h
     glean/private/counter.cpp
+    glean/private/event.h
     glean/private/ping.h
     glean/private/ping.cpp
     glean/extern.h

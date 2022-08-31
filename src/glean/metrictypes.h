@@ -5,6 +5,7 @@
 #ifndef METRICTYPES_H
 #define METRICTYPES_H
 
+#include "private/event.h"
 #include "private/counter.h"
 #include "private/ping.h"
 

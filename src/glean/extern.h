@@ -15,6 +15,8 @@
 #include <ostream>
 #include <new>
 
+using RawStringArray = const char*const *;
+
 extern "C" {
 
 void glean_initialize(bool is_telemetry_enabled);
@@ -25,7 +27,12 @@ int32_t glean_counter_test_get_value(uint32_t id);
 
 bool glean_counter_test_get_error(uint32_t id);
 
-void glean_event_record(uint32_t id);
+void glean_event_record_no_extra(uint32_t id);
+
+void glean_event_record(uint32_t id,
+                        RawStringArray extra_keys,
+                        RawStringArray extra_values,
+                        int32_t extras_len);
 
 bool glean_event_test_get_error(uint32_t id);
 

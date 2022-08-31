@@ -249,6 +249,12 @@ void MozillaVPN::initialize() {
 
   Glean::initialize();
   mozilla::glean::testing::my_counter.add(10);
+  mozilla::glean::iap_g::purchases_updated_failed.record(
+      mozilla::glean::iap_g::PurchasesUpdatedFailedExtra{
+        aFlag : QVariant(false),
+        aNumber : QVariant(42),
+        reason : QVariant("GIVE ME A REASON!!!!"),
+      });
   mozilla::glean_pings::Main.submit();
 
 #ifdef MVPN_IOS

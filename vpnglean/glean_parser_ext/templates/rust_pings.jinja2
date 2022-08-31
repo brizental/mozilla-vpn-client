@@ -8,10 +8,27 @@ Jinja2 template is not. Please file bugs! #}
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+use glean::private::PingType;
+use once_cell::sync::Lazy;
+
+{% for obj in all_objs['pings'].values() %}
+#[allow(non_upper_case_globals)]
+/// {{ obj.description|wordwrap() | replace('\n', '\n/// ') }}
+pub static {{ obj.name|snake_case }}: Lazy<PingType> = Lazy::new(|| {
+    PingType::new(
+        "{{ obj.name }}",
+        {{ obj.include_client_id|rust }},
+        {{ obj.send_if_empty|rust }},
+        {{ obj.reason_codes|rust }},
+    )
+});
+
+{% endfor %}
+
 pub(crate) fn submit_ping_by_id(id: u32, reason: Option<&str>) {
     match id {
 {% for obj in all_objs['pings'].values() %}
-        {{ obj.name|ping_id }} => crate::metrics::og_metrics::{{ obj.name | snake_case }}.submit(reason),
+        {{ obj.name|ping_id }} => {{ obj.name | snake_case }}.submit(reason),
 {% endfor %}
         _ => {
             // TODO: instrument this error.

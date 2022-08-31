@@ -16,11 +16,88 @@ use once_cell::sync::Lazy;
 
 use glean::traits::EventRecordingError;
 
+{% macro generate_extra_keys(obj) -%}
+{% for name, _ in obj["_generate_enums"] %}
+{# we always use the `extra` suffix, because we only expose the new event API #}
+{% set suffix = "Extra" %}
+{% if obj|attr(name)|length %}
+    {% if obj.has_extra_types %}
+    {{ extra_keys_with_types(obj, name, suffix)|indent }}
+    {% else %}
+    compile_error!("Untyped event extras not supported. Please annotate event extras with a type. See documentation for details. (Metric: {{obj.category}}.{{obj.name}}, defined in: {{obj.defined_in['filepath']}}:{{obj.defined_in['line']}})");
+    {% endif %}
+{% endif %}
+{% endfor %}
+{%- endmacro -%}
+
+{%- macro extra_keys_with_types(obj, name, suffix) -%}
+#[derive(Default, Debug, Clone, Hash, Eq, PartialEq)]
+pub struct {{ obj.name|Camelize }}{{ suffix }} {
+    {% for item, type in obj|attr(name) %}
+    pub {{ item|snake_case }}: Option<{{type|extra_type_name}}>,
+    {% endfor %}
+}
+
+impl ExtraKeys for {{ obj.name|Camelize }}{{ suffix }} {
+    const ALLOWED_KEYS: &'static [&'static str] = {{ obj.allowed_extra_keys|extra_keys }};
+
+    fn into_ffi_extra(self) -> ::std::collections::HashMap<String, String> {
+      let mut map = ::std::collections::HashMap::new();
+      {% for key, _ in obj|attr(name) %}
+      self.{{key|snake_case}}.and_then(|val| map.insert("{{key|snake_case}}".into(), val.to_string()));
+      {% endfor %}
+      map
+    }
+}
+{%- endmacro -%}
+
+{% for category_name, objs in all_objs.items() %}
+pub mod {{ category_name|snake_case }} {
+    use glean::private::*;
+    use glean::{CommonMetricData, Lifetime};
+    #[allow(unused_imports)] // ExtraKeys might be unusued, let's avoid warnings
+    use glean::traits::ExtraKeys;
+    #[allow(unused_imports)] // HistogramType might be unusued, let's avoid warnings
+    use glean::HistogramType;
+    use once_cell::sync::Lazy;
+
+    {% for obj in objs.values() %}
+    {% if obj|attr("_generate_enums") %}
+{{ generate_extra_keys(obj) }}
+    {%- endif %}
+    #[allow(non_upper_case_globals)]
+    /// generated from {{ category_name }}.{{ obj.name }}
+    ///
+    /// {{ obj.description|wordwrap() | replace('\n', '\n    /// ') }}
+    pub static {{ obj.name|snake_case }}: Lazy<{{ obj|type_name }}> = Lazy::new(|| {
+        {{ obj|ctor }}(CommonMetricData {
+            {% for arg_name in common_metric_data_args if obj[arg_name] is defined %}
+            {{ arg_name }}: {{ obj[arg_name]|rust }},
+            {% endfor %}
+            ..Default::default()
+        }
+        {%- for arg_name in extra_args if obj[arg_name] is defined and arg_name not in common_metric_data_args and arg_name != 'allowed_extra_keys' -%}
+            , {{ obj[arg_name]|rust }}
+        {%- endfor -%}
+        {{ ", " if obj.labeled else ")\n" }}
+        {%- if obj.labeled -%}
+        {%- if obj.labels -%}
+        Some({{ obj.labels|rust }})
+        {%- else -%}
+        None
+        {%- endif -%})
+        {% endif %}
+    });
+
+    {% endfor %}
+}
+{% endfor %}
+
 {% for typ, metrics in metric_by_type.items() %}
 pub static {{typ.0}}: Lazy<HashMap<MetricId, &Lazy<glean::private::{{typ.1}}>>> = Lazy::new(|| {
-    let mut map = HashMap::with_capacity({{metrics|length}});
+    let mut map: HashMap<MetricId, &Lazy<glean::private::{{typ.1}}>> = HashMap::with_capacity({{metrics|length}});
     {% for metric in metrics %}
-    map.insert({{metric.0}}.into(), &crate::metrics::og_metrics::{{metric.1}});
+    map.insert({{metric.0}}.into(), &{{metric.1}});
     {% endfor %}
     map
 });
@@ -37,16 +114,35 @@ pub static {{typ.0}}: Lazy<HashMap<MetricId, &Lazy<glean::private::{{typ.1}}>>> 
 /// Returns `Ok(())` if the event was found and `record` was called with the given `extra`,
 /// or an `EventRecordingError::InvalidId` if no event by that ID exists
 /// or an `EventRecordingError::InvalidExtraKey` if the `extra` map could not be deserialized.
-pub(crate) fn record_event_by_id(metric_id: u32/*, extra: HashMap<String, String>*/) -> Result<(), EventRecordingError> {
+pub(crate) fn record_event_by_id(metric_id: u32, extra: HashMap<String, String>) -> Result<(), EventRecordingError> {
     match metric_id {
 {% for metric_id, event in events_by_id.items() %}
         {{metric_id}} => {
-            // assert!(
-            //     extra.is_empty(),
-            //     "No extra keys allowed, but some were passed"
-            // );
+            {{event}}.record_with_time(glean::get_timestamp_ms(), extra);
+            Ok(())
+        }
+{% endfor %}
+        _ => Err(EventRecordingError::InvalidId),
+    }
+}
 
-            crate::metrics::og_metrics::{{event}}.record(None);
+/// Wrapper to record an event based on its metric ID.
+///
+/// # Arguments
+///
+/// * `metric_id` - The metric's ID to look up
+/// * `extra`     - An map of (extra key id, string) pairs.
+///                 The map will be decoded into the appropriate `ExtraKeys` type.
+/// # Returns
+///
+/// Returns `Ok(())` if the event was found and `record` was called with the given `extra`,
+/// or an `EventRecordingError::InvalidId` if no event by that ID exists
+/// or an `EventRecordingError::InvalidExtraKey` if the `extra` map could not be deserialized.
+pub(crate) fn record_event_by_id_no_extra(metric_id: u32) -> Result<(), EventRecordingError> {
+    match metric_id {
+{% for metric_id, event in events_by_id.items() %}
+        {{metric_id}} => {
+            {{event}}.record(None);
             Ok(())
         }
 {% endfor %}
@@ -73,7 +169,7 @@ pub(crate) fn record_event_by_id(metric_id: u32/*, extra: HashMap<String, String
 pub(crate) fn event_test_get_error(metric_id: u32) -> Option<String> {
     match metric_id {
 {% for metric_id, event in events_by_id.items() %}
-        {{metric_id}} => test_get_errors!(crate::metrics::og_metrics::{{event}}),
+        {{metric_id}} => test_get_errors!({{event}}),
 {% endfor %}
         _ => panic!("No event for metric id {}", metric_id),
     }
