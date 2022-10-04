@@ -99,6 +99,7 @@ class XCodeprojPatcher
     [
       'src/platforms/ios/ioscontroller.swift',
       'src/platforms/ios/ioslogger.swift',
+      'src/platforms/ios/iosgleanglue.swift',
     ].each { |filename|
       file = group.new_file(filename)
       @target_main.add_file_references([file])
