@@ -3,6 +3,9 @@ pub mod macros;
 
 use std::env;
 
+// Make internal Glean symbols public for mobile SDK comsumption.
+pub use glean_core;
+
 use glean::{ClientInfoMetrics, Configuration};
 use uploader::VPNPingUploader;
 

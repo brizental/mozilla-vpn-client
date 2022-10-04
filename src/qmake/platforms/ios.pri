@@ -55,6 +55,7 @@ LIBS += -framework UserNotifications
 LIBS += -framework Network
 
 DEFINES += MVPN_IOS
+DEFINES += MVPN_VPNGLEAN
 
 SOURCES += \
     platforms/macos/macospingsender.cpp \

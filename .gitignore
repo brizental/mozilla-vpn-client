@@ -211,3 +211,5 @@ Cargo.lock
 
 # Glean stuff
 generated/
+ios/Glean/
+ios/Generated

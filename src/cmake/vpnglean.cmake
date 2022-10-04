@@ -5,9 +5,9 @@
 if(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
     set(OPENSSL_USE_STATIC_LIBS TRUE)
     find_package(OpenSSL REQUIRED)
+    cmake_path(GET OPENSSL_SSL_LIBRARY PARENT_PATH OPENSSL_LIB_DIR)
 endif()
 
-cmake_path(GET OPENSSL_SSL_LIBRARY PARENT_PATH OPENSSL_LIB_DIR)
 if (CMAKE_BUILD_TYPE STREQUAL "Debug")
     # Question: Why do I need to add these env vars to the command if they are already set by cmake?
     set(CARGO_CMD OPENSSL_STATIC=yes OPENSSL_LIB_DIR=${OPENSSL_LIB_DIR} OPENSSL_INCLUDE_DIR=${OPENSSL_INCLUDE_DIR} cargo build)
