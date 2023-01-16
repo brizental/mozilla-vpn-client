@@ -7,3 +7,18 @@
 
 ---
 $schema: moz://mozilla.org/schemas/glean/metrics/2-0-0
+
+interaction:
+  support_case_submitted:
+    type: counter
+    description: >
+      How many times a day is a support case submitted.
+    bugs:
+      - https://bugzilla.mozilla.org/000000
+    data_reviews:
+      - TODO
+    notification_emails:
+      - brizental@mozilla.com
+    data_sensitivity:
+      - interaction
+    expires: never

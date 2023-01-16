@@ -3,6 +3,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include "appconstants.h"
+#include "glean/glean.h"
 #include "helper.h"
 #include "l18nstrings.h"
 #include "leakdetector.h"
@@ -34,6 +35,9 @@ int main(int argc, char* argv[]) {
   LeakDetector leakDetector;
   Q_UNUSED(leakDetector);
 #endif
+
+  VPNGlean::registerLogHandler(LogHandler::rustMessageHandler);
+
   {
     SettingsHolder settingsHolder;
     AppConstants::setStaging();

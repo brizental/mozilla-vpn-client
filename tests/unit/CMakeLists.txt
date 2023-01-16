@@ -191,6 +191,8 @@ target_sources(unit_tests PRIVATE
     ${MZ_SOURCE_DIR}/apps/vpn/tasks/addon/taskaddon.h
     ${MZ_SOURCE_DIR}/apps/vpn/tasks/addonindex/taskaddonindex.cpp
     ${MZ_SOURCE_DIR}/apps/vpn/tasks/addonindex/taskaddonindex.h
+    ${MZ_SOURCE_DIR}/apps/vpn/tasks/createsupportticket/taskcreatesupportticket.cpp
+    ${MZ_SOURCE_DIR}/apps/vpn/tasks/createsupportticket/taskcreatesupportticket.h
     ${MZ_SOURCE_DIR}/apps/vpn/tasks/function/taskfunction.cpp
     ${MZ_SOURCE_DIR}/apps/vpn/tasks/function/taskfunction.h
     ${MZ_SOURCE_DIR}/apps/vpn/tasks/group/taskgroup.cpp
@@ -199,10 +201,10 @@ target_sources(unit_tests PRIVATE
     ${MZ_SOURCE_DIR}/apps/vpn/tasks/ipfinder/taskipfinder.h
     ${MZ_SOURCE_DIR}/apps/vpn/tasks/release/taskrelease.cpp
     ${MZ_SOURCE_DIR}/apps/vpn/tasks/release/taskrelease.h
-    ${MZ_SOURCE_DIR}/apps/vpn/tasks/servers/taskservers.cpp
-    ${MZ_SOURCE_DIR}/apps/vpn/tasks/servers/taskservers.h
     ${MZ_SOURCE_DIR}/apps/vpn/tasks/sentry/tasksentry.cpp
     ${MZ_SOURCE_DIR}/apps/vpn/tasks/sentry/tasksentry.h
+    ${MZ_SOURCE_DIR}/apps/vpn/tasks/servers/taskservers.cpp
+    ${MZ_SOURCE_DIR}/apps/vpn/tasks/servers/taskservers.h
     ${MZ_SOURCE_DIR}/apps/vpn/theme.cpp
     ${MZ_SOURCE_DIR}/apps/vpn/theme.h
     ${MZ_SOURCE_DIR}/apps/vpn/tutorial/tutorial.cpp

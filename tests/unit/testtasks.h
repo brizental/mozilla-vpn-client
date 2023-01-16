@@ -4,10 +4,15 @@
 
 #include "helper.h"
 
+class SettingsHolder;
+
 class TestTasks final : public TestHelper {
   Q_OBJECT
 
  private slots:
+  void init();
+  void cleanup();
+
   void account();
   void servers();
 
@@ -22,4 +27,9 @@ class TestTasks final : public TestHelper {
 
   void deleteTasks();
   void forceDeleteTasks();
+
+  void testCreateSupportTicketTelemetry();
+
+ private:
+  SettingsHolder* m_settingsHolder = nullptr;
 };

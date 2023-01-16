@@ -4,13 +4,34 @@
 
 #include "testtasks.h"
 
+#include "glean/generated/metrics.h"
+#include "glean/glean.h"
 #include "mozillavpn.h"
+#include "settingsholder.h"
 #include "tasks/account/taskaccount.h"
 #include "tasks/adddevice/taskadddevice.h"
+#include "tasks/createsupportticket/taskcreatesupportticket.h"
 #include "tasks/function/taskfunction.h"
 #include "tasks/group/taskgroup.h"
 #include "tasks/servers/taskservers.h"
 #include "taskscheduler.h"
+
+void TestTasks::init() {
+  m_settingsHolder = new SettingsHolder();
+
+  // Glean needs to be initialized for every test because this test suite
+  // includes telemetry tests.
+  //
+  // Glean operations are queued and applied once Glean is initialized.
+  // If we only initialize it in the test that actually tests telemetry all
+  // of the Glean operations from previous tests will be applied and mess with
+  // the state of the test that actually is testing telemetry.
+  //
+  // Note: on tests Glean::initialize clears Glean's storage.
+  VPNGlean::initialize();
+}
+
+void TestTasks::cleanup() { delete m_settingsHolder; }
 
 void TestTasks::account() {
   // Failure
@@ -318,6 +339,31 @@ void TestTasks::forceDeleteTasks() {
 
   QCOMPARE(sequence.length(), 1);
   QCOMPARE(sequence.at(0), "t3");
+}
+
+void TestTasks::testCreateSupportTicketTelemetry() {
+  TestHelper::networkConfig.append(TestHelper::NetworkConfig(
+      TestHelper::NetworkConfig::Success, QByteArray()));
+  TestHelper::networkConfig.append(TestHelper::NetworkConfig(
+      TestHelper::NetworkConfig::Failure, QByteArray()));
+
+  // Execute the task twice, once will succeed another will fail
+  for (int i = 0; i < 2; i++) {
+    TaskCreateSupportTicket* task = new TaskCreateSupportTicket(
+        "foo@bar.com", "subject", "issue", "logs", "cat");
+
+    QEventLoop loop;
+    connect(task, &Task::completed, task, [&]() { loop.exit(); });
+
+    TaskScheduler::scheduleTask(task);
+    loop.exec();
+  }
+
+  QCOMPARE(mozilla::glean::interaction::support_case_submitted
+               .testGetNumRecordedErrors(ErrorType::InvalidValue),
+           0);
+  QCOMPARE(mozilla::glean::interaction::support_case_submitted.testGetValue(),
+           2);
 }
 
 static TestTasks s_testTasks;

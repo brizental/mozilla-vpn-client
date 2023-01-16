@@ -5,6 +5,7 @@
 #include "taskcreatesupportticket.h"
 
 #include "errorhandler.h"
+#include "glean/generated/metrics.h"
 #include "leakdetector.h"
 #include "logger.h"
 #include "models/user.h"
@@ -41,6 +42,8 @@ TaskCreateSupportTicket::~TaskCreateSupportTicket() {
 
 void TaskCreateSupportTicket::run() {
   logger.debug() << "Sending the support ticket";
+
+  mozilla::glean::interaction::support_case_submitted.add();
 
   NetworkRequest* request = NetworkRequest::createForSupportTicket(
       this, m_email, m_subject, m_issueText, m_logs, m_category);
